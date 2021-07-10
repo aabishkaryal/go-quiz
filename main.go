@@ -37,7 +37,7 @@ func main() {
 
 		// read answer
 		var ans string
-		fmt.Println("Answer: ")
+		fmt.Printf("Answer: ")
 		n, err := fmt.Scanln(&ans)
 
 		// no error and no multiple answers
