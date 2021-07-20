@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 )
 
 // Represents one set of question and answer
@@ -16,13 +17,14 @@ type Exercise struct {
 
 func main() {
 	// read quizFile name from flag or default problems.csv
-	quizFileName := *flag.String("csv",
+	quizFileName := flag.String("csv",
 		"problems.csv",
 		"CSV file in the format question, answer")
+	timeLimit := flag.Int("time", 5, "Time limit for each question.")
 	flag.Parse()
 
 	// read the file and parse it into list of exercises
-	exercises := openExerciseFile(quizFileName)
+	exercises := openExerciseFile(*quizFileName)
 	score := 0
 
 	// display welcome message
@@ -35,22 +37,33 @@ func main() {
 		// show question
 		fmt.Printf("%d. %s\n", i, exercise.question)
 
-		// read answer
-		var ans string
-		fmt.Printf("Answer: ")
-		n, err := fmt.Scanln(&ans)
-
-		// no error and no multiple answers
-		if err != nil && n > 1 {
-			log.Fatal(err)
+		timer := time.NewTimer(time.Duration(*timeLimit) * time.Second)
+		answerCh := make(chan string)
+		go func() {
+			// read answer
+			var ans string
+			fmt.Printf("Answer: ")
+			n, err := fmt.Scanln(&ans)
+			// no error and no multiple answers
+			if err != nil && n > 1 {
+				log.Fatal(err)
+			}
+			answerCh <- ans
+		}()
+		select {
+		case <-timer.C:
+			fmt.Println("\nTime Out.")
+			fmt.Printf("You scored %d out of %d.\n", score, len(exercises))
+			return
+		case ans := <-answerCh:
+			// check for correct answer
+			if ans == exercise.ans {
+				score++
+			}
+			// display new line to show next question
+			fmt.Println()
 		}
 
-		// check for correct answer
-		if ans == exercise.ans {
-			score++
-		}
-		// display new line to show next question
-		fmt.Println()
 	}
 	// Display stats at last
 	fmt.Printf("You scored %d out of %d.\n", score, len(exercises))
