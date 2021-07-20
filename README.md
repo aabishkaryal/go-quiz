@@ -3,7 +3,8 @@
 The Go program reads the quiz data from a csv file and plays a quiz game.
 
 **Usage:**  
-  *- csv string* : CSV file in the format question, answer (default "problems.csv")
+  *-csv string* : CSV file in the format question, answer (default "problems.csv")
+  *-time int* : Time Limit for each question.
 
 ## How to use:
 1. Download and install go from <https://golang.org/>
